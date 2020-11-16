@@ -1,14 +1,8 @@
-// Create Db 
 const express = require('express');
 
 const router = express.Router();
 
 const mysql = require('mysql');
-
-const generalQueries = require('./queries/general-queries');
-const dropQueries = require('./queries/drop-queries');
-const createQueries = require('./queries/create-table-query');
-const { PLAYER_HAS_STATS, PLAYS_FOR } = require('./queries/create-table-query');
 
 const db = mysql.createConnection({
     host: 'localhost', 
@@ -26,7 +20,15 @@ db.connect((err) => {
     }
 });
 
-router.get('/', (req, res) => {
+const generalQueries = require('./queries/general-queries');
+const dropQueries = require('./queries/drop-queries');
+const createQueries = require('./queries/create-table-query');
+const { PLAYER_HAS_STATS, PLAYS_FOR } = require('./queries/create-table-query');
+
+// @route   POST api/init/ 
+// @desc    Re-initializes all tables to default values
+
+router.post('/', (req, res) => {
     db.query(generalQueries.FOREIGN_KEY_OFF);
     dropTables();
     db.query(generalQueries.FOREIGN_KEY_ON);
@@ -40,6 +42,12 @@ router.get('/', (req, res) => {
     initializeCoach();
     initializePlayerContractDuration();
     initializeCoachContractDuration();
+    initializeCoaches();
+    initializeHas();
+    initializePlayerEndorsementContract();
+    initializePlayerHasStatistics();
+    initializePlaysFor();
+    initializeSupports();
     res.send("Finished Initialization");
 });
 
@@ -82,10 +90,23 @@ const createTables = () => {
     console.log("Tables Created");
 }
 
+const initializeHas = () => {
+    insertHas("Lakers", "LA", "Lakers");
+    insertHas("Rockets", "Houston", "Rockets");
+    insertHas("Hawks", "Atlanta", "Hawks");
+    insertHas("Warriors", "San Francisco", "Warriors");
+    insertHas("Bulls", "Chicago", "Bulls");
+}
+
+const insertHas = (t_teamName, city, r_teamName) => {
+    let sql = `INSERT INTO Has (t_teamName, city, r_teamName) VALUES('${t_teamName}', '${city}', '${r_teamName}')`;
+    db.query(sql);
+}
+
 const initializeTeams = () => {
     insertTeam("Lakers", "LA", "Buss Family Trust");
     insertTeam("Warriors", "San Francisco", "Joseph S. Lacob, Peter Gruber");
-    insertTeam("Celtics", "Boston", "Boston Basketball Partners"); 
+    insertTeam("Rockets", "Houston", "Tilman Fertitta"); 
     insertTeam("Hawks", "Atlanta", "Antony Ressler");
     insertTeam("Bulls", "Chicago", "Jerry Reinsdorf");
 }
@@ -110,7 +131,7 @@ const insertStaff = (staffId, name) => {
 const initializePlayers = () => {
     insertPlayer(123, "LeBron James", 23, 250, 6.9); 
     insertPlayer(323, "James Harden", 13, 220, 6.5); 
-    insertPlayer(423, "Luka Doncic", 77, 230, 6.7); 
+    insertPlayer(423, "Jeff Teague", 0, 195, 6.3); 
     insertPlayer(523, "Stephan Curry", 30, 185, 6.3); 
     insertPlayer(3123, "Ryan Arcidiacono", 51, 195, 6.3);
 }
@@ -123,7 +144,7 @@ const insertPlayer = (playerId, p_name, number, weight, height) => {
 const initializeRoster = () => {
     insertRoster("Lakers", 25); 
     insertRoster("Rockets", 23); 
-    insertRoster("Mavericks", 22); 
+    insertRoster("Hawks", 22); 
     insertRoster("Warriors", 21); 
     insertRoster("Bulls", 22);
 }
@@ -136,7 +157,7 @@ const insertRoster = (teamName, numberOfPlayers) => {
 const initializeSponsors = () => {
     insertSponsor("Mercedes Benz", "Lakers", "LA", 150000.1); 
     insertSponsor("BMW", "Warriors", "San Francisco", 123000.1); 
-    insertSponsor("Lexus", "Celtics", "Boston", 139000.1); 
+    insertSponsor("Lexus", "Rockets", "Houston", 139000.1); 
     insertSponsor("Audi", "Hawks", "Atlanta", 190000.1); 
     insertSponsor("Toyota", "Bulls", "Chicago", 168000.1); 
 }
@@ -148,7 +169,7 @@ const insertSponsor = (name, teamName, city, amount) => {
 const initializeHelps = () => {
     insertHelps("LA", "Lakers", 3123, 100); 
     insertHelps("San Francisco", "Warriors", 3323, 200); 
-    insertHelps("Boston", "Celtics", 4423, 300); 
+    insertHelps("Houston", "Rockets", 4423, 300); 
     insertHelps("Atlanta", "Hawks", 5123, 400); 
     insertHelps("Chicago", "Bulls", "6312", 500);
 }
@@ -171,11 +192,11 @@ const insertCoach = (coachId, name) => {
     db.query(sql);
 }
 const initializeCoachContractDuration = () => {
-    insertCoachContractDuration("2020-01-01", "2021-01-01", "01-00-00");
-    insertCoachContractDuration("2020-01-03", "2021-01-03", "01-00-00");
-    insertCoachContractDuration("2020-01-04", "2021-01-04", "01-00-00");
-    insertCoachContractDuration("2020-01-05", "2021-01-05", "01-00-00");
-    insertCoachContractDuration("2020-01-06", "2021-01-06", "01-00-00");
+    insertCoachContractDuration("2020-01-01", "2021-01-01", "01-00-01");
+    insertCoachContractDuration("2020-01-03", "2021-01-03", "01-00-01");
+    insertCoachContractDuration("2020-01-04", "2021-01-04", "01-00-01");
+    insertCoachContractDuration("2020-01-05", "2021-01-05", "01-00-01");
+    insertCoachContractDuration("2020-01-06", "2021-01-06", "01-00-01");
 }
 const insertCoachContractDuration = (startDate, endDate, duration) => {
     let sql = `INSERT INTO Coach_Contract_Duration (startDate, endDate, duration) VALUES('${startDate}', '${endDate}', '${duration}')`;
@@ -183,11 +204,11 @@ const insertCoachContractDuration = (startDate, endDate, duration) => {
 }
 
 const initializePlayerContractDuration = () => {
-    insertPlayerContractDuration("2020-01-01", "2021-01-01", "01-00-00");
-    insertPlayerContractDuration("2020-01-03", "2021-01-03", "01-00-00");
-    insertPlayerContractDuration("2020-01-04", "2021-01-04", "01-00-00");
-    insertPlayerContractDuration("2020-01-05", "2021-01-05", "01-00-00");
-    insertPlayerContractDuration("2020-01-06", "2021-01-06", "01-00-00");
+    insertPlayerContractDuration("2020-01-01", "2021-01-01", "01-00-01");
+    insertPlayerContractDuration("2020-01-03", "2021-01-03", "01-00-01");
+    insertPlayerContractDuration("2020-01-04", "2021-01-04", "01-00-01");
+    insertPlayerContractDuration("2020-01-05", "2021-01-05", "01-00-01");
+    insertPlayerContractDuration("2020-01-06", "2021-01-06", "01-00-01");
 }
 
 const insertPlayerContractDuration = (startDate, endDate, duration) => {
@@ -195,6 +216,70 @@ const insertPlayerContractDuration = (startDate, endDate, duration) => {
     db.query(sql);
 }
 
+const initializeCoaches = () => {
+    insertCoaches(123, "Lakers", 100, "2020-01-01", "2021-01-01");
+    insertCoaches(323, "Rockets", 150, "2020-01-03", "2021-01-03");
+    insertCoaches(423, "Hawks", 120, "2020-01-04", "2021-01-04");
+    insertCoaches(523, "Warriors", 222, "2020-01-05", "2021-01-05");
+    insertCoaches(3123, "Bulls", 123, "2020-01-06", "2021-01-06");
+}
+
+const insertCoaches = (coachId, teamName, salary, startDate, endDate) => {
+    let sql = `INSERT INTO Coaches (coachId, teamName, salary, startDate, endDate) VALUES ('${coachId}', '${teamName}', '${salary}', '${startDate}', '${endDate}')`;
+    db.query(sql);
+}
+
+const initializePlayerEndorsementContract = () => {
+    insertPlayerEndorsementContract(123, 123, "2020-01-01", "2021-01-01", 100);
+    insertPlayerEndorsementContract(323, 323, "2020-01-03", "2021-01-03", 150);
+    insertPlayerEndorsementContract(423, 423, "2020-01-04", "2021-01-04", 200);
+    insertPlayerEndorsementContract(523, 523, "2020-01-05", "2021-01-05", 199);
+    insertPlayerEndorsementContract(3123, 3123, "2020-01-06", "2021-01-06", 300);
+}
+
+const insertPlayerEndorsementContract = (playerId, cnum, start, end, amount) => {
+    let sql = `INSERT INTO Player_Endorsement_Contracts (playerId, cnum, start, end, amount) VALUES ('${playerId}', '${cnum}', '${start}', '${end}', '${amount}')`;
+    db.query(sql);
+}
+
+const initializePlayerHasStatistics = () => {
+    insertPlayerHasStatistics(123, "2019-2020", 23, 4, 0.3);
+    insertPlayerHasStatistics(323, "2019-2020", 24, 5, 0.35);
+    insertPlayerHasStatistics(423, "2019-2020", 22, 6, 0.4);
+    insertPlayerHasStatistics(523, "2019-2020", 25, 5, 0.5);
+    insertPlayerHasStatistics(3123, "2019-2020", 26, 3, 0.4);
+}
+
+const insertPlayerHasStatistics = (playerId, season, ppg, apg, fg) => {
+    let sql = `INSERT INTO Player_Has_Statistics (playerId, season, ppg, apg, fg) VALUES ('${playerId}', '${season}', '${ppg}', '${apg}', '${fg}')`;
+    db.query(sql);
+}
+
+const initializePlaysFor = () => {
+    insertPlaysFor(123, "2020-01-01", "2021-01-01", 100, "Lakers");
+    insertPlaysFor(323, "2020-01-03", "2021-01-03", 150, "Rockets");
+    insertPlaysFor(423, "2020-01-04", "2021-01-04", 200, "Hawks");
+    insertPlaysFor(523, "2020-01-05", "2021-01-05", 300, "Warriors");
+    insertPlaysFor(3123, "2020-01-06", "2021-01-06", 500, "Bulls");
+}
+
+const insertPlaysFor = (playerId, startDate, endDate, salary, teamName) => {
+    let sql = `INSERT INTO Plays_For (playerId, startDate, endDate, salary, teamName) VALUES ('${playerId}', '${startDate}', '${endDate}', '${salary}', '${teamName}')`;
+    db.query(sql);
+}
+
+const initializeSupports = () => {
+    insertSupports(123, 3123);
+    insertSupports(323, 3323);
+    insertSupports(423, 4423);
+    insertSupports(523, 5123);
+    insertSupports(3123, 6312);
+}
+
+const insertSupports = (playerId, staffId) => {
+    let sql = `INSERT INTO Supports (playerId, staffId) VALUES('${playerId}', '${staffId}')`;
+    db.query(sql);
+}
 
 
 

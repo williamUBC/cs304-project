@@ -1,14 +1,8 @@
-// Create Db 
 const express = require('express');
 
 const router = express.Router();
 
 const mysql = require('mysql');
-
-const generalQueries = require('./queries/general-queries');
-const dropQueries = require('./queries/drop-queries');
-const createQueries = require('./queries/create-table-query');
-const { PLAYER_HAS_STATS, PLAYS_FOR } = require('./queries/create-table-query');
 
 const db = mysql.createConnection({
     host: 'localhost', 
@@ -26,7 +20,15 @@ db.connect((err) => {
     }
 });
 
-router.get('/', (req, res) => {
+const generalQueries = require('./queries/general-queries');
+const dropQueries = require('./queries/drop-queries');
+const createQueries = require('./queries/create-table-query');
+const { PLAYER_HAS_STATS, PLAYS_FOR } = require('./queries/create-table-query');
+
+// @route   POST api/init/ 
+// @desc    Re-initializes all tables to default values
+
+router.post('/', (req, res) => {
     db.query(generalQueries.FOREIGN_KEY_OFF);
     dropTables();
     db.query(generalQueries.FOREIGN_KEY_ON);
@@ -190,11 +192,11 @@ const insertCoach = (coachId, name) => {
     db.query(sql);
 }
 const initializeCoachContractDuration = () => {
-    insertCoachContractDuration("2020-01-01", "2021-01-01", "01-00-00");
-    insertCoachContractDuration("2020-01-03", "2021-01-03", "01-00-00");
-    insertCoachContractDuration("2020-01-04", "2021-01-04", "01-00-00");
-    insertCoachContractDuration("2020-01-05", "2021-01-05", "01-00-00");
-    insertCoachContractDuration("2020-01-06", "2021-01-06", "01-00-00");
+    insertCoachContractDuration("2020-01-01", "2021-01-01", "01-00-01");
+    insertCoachContractDuration("2020-01-03", "2021-01-03", "01-00-01");
+    insertCoachContractDuration("2020-01-04", "2021-01-04", "01-00-01");
+    insertCoachContractDuration("2020-01-05", "2021-01-05", "01-00-01");
+    insertCoachContractDuration("2020-01-06", "2021-01-06", "01-00-01");
 }
 const insertCoachContractDuration = (startDate, endDate, duration) => {
     let sql = `INSERT INTO Coach_Contract_Duration (startDate, endDate, duration) VALUES('${startDate}', '${endDate}', '${duration}')`;
@@ -202,11 +204,11 @@ const insertCoachContractDuration = (startDate, endDate, duration) => {
 }
 
 const initializePlayerContractDuration = () => {
-    insertPlayerContractDuration("2020-01-01", "2021-01-01", "01-00-00");
-    insertPlayerContractDuration("2020-01-03", "2021-01-03", "01-00-00");
-    insertPlayerContractDuration("2020-01-04", "2021-01-04", "01-00-00");
-    insertPlayerContractDuration("2020-01-05", "2021-01-05", "01-00-00");
-    insertPlayerContractDuration("2020-01-06", "2021-01-06", "01-00-00");
+    insertPlayerContractDuration("2020-01-01", "2021-01-01", "01-00-01");
+    insertPlayerContractDuration("2020-01-03", "2021-01-03", "01-00-01");
+    insertPlayerContractDuration("2020-01-04", "2021-01-04", "01-00-01");
+    insertPlayerContractDuration("2020-01-05", "2021-01-05", "01-00-01");
+    insertPlayerContractDuration("2020-01-06", "2021-01-06", "01-00-01");
 }
 
 const insertPlayerContractDuration = (startDate, endDate, duration) => {
